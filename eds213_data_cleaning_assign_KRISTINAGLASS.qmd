@@ -1,0 +1,237 @@
+---
+title: "Data Cleaning HW"
+author: "Kristina Glass"
+format: html
+---
+
+```{r}
+#| message: false  
+
+# Libraries
+library(tidyverse)
+#file path
+datadir_processed <- "data/processed/"
+
+# file names
+snowsurvey_fixed <- read_csv("data/processed/snow_cover.csv")
+```
+
+# Snow survey data
+
+# Water Cover
+
+```{r}
+#check the count of variables in column
+snowsurvey_fixed %>% 
+  count(Water_cover)
+```
+
+```{r}
+#filter for NA's
+snowsurvey_fixed %>% 
+  count(Water_cover) %>% 
+  filter(is.na(as.numeric(Water_cover)))
+```
+
+```{r}
+#remove non numeric values and turn to NA's
+snowsurvey_fixed <- snowsurvey_fixed %>% 
+  mutate(Water_cover = ifelse(Water_cover == ".", NA, Water_cover))
+
+snowsurvey_fixed <- snowsurvey_fixed %>% 
+  mutate(Water_cover = ifelse(Water_cover == "-", NA, Water_cover))
+
+snowsurvey_fixed <- snowsurvey_fixed %>% 
+  mutate(Water_cover = ifelse(Water_cover == "n/a", NA, Water_cover))
+
+snowsurvey_fixed <- snowsurvey_fixed %>% 
+  mutate(Water_cover = ifelse(Water_cover == "unk", NA, Water_cover))
+```
+
+```{r}
+#check to see that all non-numeric variables have been turned to NA's
+snowsurvey_fixed %>% 
+  count(Water_cover) %>% 
+  filter(is.na(as.numeric(Water_cover)))
+```
+
+```{r}
+#turn column from character to numeric, check results
+snowsurvey_fixed <- snowsurvey_fixed %>% 
+  mutate(Water_cover = as.numeric(Water_cover))
+
+glimpse(snowsurvey_fixed)
+```
+
+```{r}
+#filter for entires over 100
+ snowsurvey_fixed %>% 
+  filter(Water_cover > 100)
+```
+
+```{r}
+#remove large entires and turn to NA's
+snowsurvey_fixed <- snowsurvey_fixed %>% 
+  mutate(Water_cover = ifelse(Water_cover > 100, NA, Water_cover))
+```
+
+```{r}
+#check for entires under 0
+snowsurvey_fixed %>% 
+  filter(Snow_cover < 0)
+```
+
+# Land Cover
+
+```{r}
+#check count of land cover column
+snowsurvey_fixed %>% 
+  count(Land_cover)
+```
+```{r}
+#check for non numeric values in column
+snowsurvey_fixed %>% 
+  count(Land_cover) %>% 
+  filter(is.na(as.numeric(Land_cover)))
+```
+
+```{r}
+#filter out non numeric values and turn to NA's
+snowsurvey_fixed <- snowsurvey_fixed %>% 
+  mutate(Land_cover = ifelse(Land_cover == ".", NA, Land_cover))
+
+snowsurvey_fixed <- snowsurvey_fixed %>% 
+  mutate(Land_cover = ifelse(Land_cover == "-", NA, Land_cover))
+
+snowsurvey_fixed <- snowsurvey_fixed %>% 
+  mutate(Land_cover = ifelse(Land_cover == "n/a", NA, Land_cover))
+
+snowsurvey_fixed <- snowsurvey_fixed %>% 
+  mutate(Land_cover = ifelse(Land_cover == "unk", NA, Land_cover))
+```
+
+```{r}
+#check to see that all non numerics are NA's
+snowsurvey_fixed %>% 
+  count(Land_cover) %>% 
+  filter(is.na(as.numeric(Land_cover)))
+```
+
+```{r}
+#turn column from character to numeric, check results
+snowsurvey_fixed <- snowsurvey_fixed %>% 
+  mutate(Land_cover = as.numeric(Land_cover))
+
+glimpse(snowsurvey_fixed)
+```
+```{r}
+#check that no entires are over 100
+ snowsurvey_fixed %>% 
+  filter(Land_cover > 100)
+```
+```{r}
+#check for entires under 0
+snowsurvey_fixed %>% 
+  filter(Land_cover < 0)
+```
+```{r}
+#turn -100 entry to 100
+snowsurvey_fixed <- snowsurvey_fixed %>% 
+  mutate(Land_cover = ifelse(Land_cover == -100, 100, Land_cover))
+#since the snow cover entry is NA and water cover is 0, its reasonable to assume land cover is 100
+
+#turn other vaue to NA
+snowsurvey_fixed <- snowsurvey_fixed %>% 
+  mutate(Land_cover = ifelse(Land_cover < 0 , NA, Land_cover))
+```
+
+# Total Cover
+
+```{r}
+# check total cover counts
+snowsurvey_fixed %>% 
+  count(Total_cover)
+```
+
+```{r}
+#filter for na values 
+snowsurvey_fixed %>% 
+  count(Total_cover) %>% 
+  filter(is.na(as.numeric(Total_cover)))
+```
+```{r}
+
+#remove non numeric etires and turn to NA's
+snowsurvey_fixed <- snowsurvey_fixed %>% 
+  mutate(Total_cover = ifelse(Total_cover == ".", NA, Total_cover))
+
+snowsurvey_fixed <- snowsurvey_fixed %>% 
+  mutate(Total_cover = ifelse(Total_cover == "n/a", NA, Total_cover))
+
+snowsurvey_fixed <- snowsurvey_fixed %>% 
+  mutate(Total_cover = ifelse(Total_cover == "-", NA, Total_cover))
+
+snowsurvey_fixed <- snowsurvey_fixed %>% 
+  mutate(Total_cover = ifelse(Total_cover == "<row r=\\64\\ spans=\\1:11\\ x14ac:dyDescent=\\0.2\\>", NA, Total_cover))
+```
+
+```{r}
+#check results
+snowsurvey_fixed %>% 
+  count(Total_cover) %>% 
+  filter(is.na(as.numeric(Total_cover)))
+```
+```{r}
+#transform column from character to numeric and check results
+snowsurvey_fixed <- snowsurvey_fixed %>% 
+  mutate(Total_cover = as.numeric(Total_cover))
+
+glimpse(snowsurvey_fixed)
+```
+```{r}
+# filter for variables over 100
+ snowsurvey_fixed %>% 
+  filter(Total_cover > 100)
+```
+```{r}
+#filter for totals under 100
+ snowsurvey_fixed %>% 
+  filter(Total_cover < 100)
+```
+
+```{r}
+# add together Snow_cover, Land_cover, and Water_cover columns to add to Total_cover column
+snowsurvey_final <- snowsurvey_fixed %>%
+   mutate(Total_cover = (Snow_cover + Land_cover + Water_cover))
+```
+
+```{r}
+#double check unique values for Total cover after summing together the three columns
+unique(snowsurvey_final$Total_cover)
+```
+```{r}
+#turn all values over 100 to NA's
+snowsurvey_final <- snowsurvey_final %>% 
+  mutate(Total_cover = ifelse(Total_cover < 100, NA, Total_cover))
+# turn all values under 100 to NA's
+snowsurvey_final <- snowsurvey_final %>% 
+  mutate(Total_cover = ifelse(Total_cover > 100, NA, Total_cover))
+
+#When looking at the new sum totals, I felt that there was too much variability in most rows to infer which cover columns should be altered. It felt the safest to turn the values to NA's rather than making assumptions about data collected from a site I'm unfamiliar with and without contacting the person who observed and recorded those values. Turning the values to NA's also allows for someone more familiar with the dataset to come in and make changes to the other cover columns that may inform the total_cover column if they have more familiarity with eh data collection at the site. It also felt like a safer option than completely removing the rows since there could still be valuable information in the rows that do have data
+```
+
+
+```{r}
+#check results
+snowsurvey_final %>% 
+  count(Total_cover) %>% 
+  filter(is.na(as.numeric(Total_cover)))
+
+unique(snowsurvey_final$Total_cover)
+
+```
+
+```{r}
+write_csv(snowsurvey_final, file.path(datadir_processed, "all_cover_fixed_KRISTINAGLASS.csv"))
+```
+
