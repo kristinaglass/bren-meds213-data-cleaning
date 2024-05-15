@@ -201,7 +201,10 @@ species_presence <- species_presence %>%
 We can remove some columns: "Num_observers", "All_obs_reported", "Observer_hours" are here to help to compute the effort of observation but since we just want presence and absence, we do not need it. We can also remove all the zeros values to reduce the size of our data set:
 
 ```{r}
-
+species_presence %>% 
+  filter(species_presence == 1) %>% 
+  count(species) %>% 
+  arrange(desc(n))
 ```
 
 Last but not least, let's have a look at our species list
